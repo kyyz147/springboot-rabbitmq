@@ -34,6 +34,9 @@ public class MessageSender implements ConfirmCallback,ReturnCallback{
 				.setMessageId(UUID.randomUUID()+"").build();
 		//发消息
 		this.rabbitTemplate.convertAndSend(exchange,routingKey,message);
+		//构建回调返回的数据(消息id)
+		/*CorrelationData correlationData=new CorrelationData(id);
+		this.rabbitTemplate.convertAndSend(exchange,routingKey,message,correlationData);*/
 	}
 	public void send2(String exchange,String routingKey){
 		String context="你好现在是"+new Date();
@@ -58,10 +61,18 @@ public class MessageSender implements ConfirmCallback,ReturnCallback{
 		// TODO Auto-generated method stub
 		
 	}
-
+	/*生产者消息确认机制,生产者往服务器发送消息的时候,采用应答机制,如果发送不成功,再走一次send方法重新发送*/
 	@Override
-	public void confirm(CorrelationData arg0, boolean arg1, String arg2) {
+	public void confirm(CorrelationData correlationData, boolean ack, String cause) {
 		// TODO Auto-generated method stub
+		/*String id=correlationData.getId();
+		if(ack){
+			System.out.println("消息发送成功");
+		}else{
+			//重试机制
+			send("exchange1", "routingKey1");
+			System.out.println("消息发送失败"+cause);
+		}*/
 		
 	}
 

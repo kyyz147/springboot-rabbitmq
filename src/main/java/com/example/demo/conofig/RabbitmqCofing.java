@@ -1,5 +1,8 @@
 package com.example.demo.conofig;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
@@ -15,6 +18,12 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitmqCofing {
+	/*死信队列*/
+	public final static String deadqueuename="dead_queue";
+	/*死信交换机*/
+	public final static String deadexchangename="dead_exchange";
+	/*死信routingkey*/
+	public final static String deadroutingkey="dead_routingkey";
 	@Value("${spring.rabbitmq.host}")
 	private String host;
 	@Value("${spring.rabbitmq.port}")
@@ -51,6 +60,12 @@ public class RabbitmqCofing {
 	 public Queue queue001() {
 		 //后面的true代表需要持久化
 	    return new Queue("queue001", true);
+	    /*绑定死信交换机*/
+	    /*之前创建的队列没有绑定私信队列和死信交换机,不能做更改,需要删掉之前的重新创建*/
+	    /*Map<String, Object> args=new HashMap<String, Object>(2);
+	    args.put("deadroutingkey", deadroutingkey);
+	    args.put("deadexchangename", deadexchangename);
+	    return new Queue("queue001", true,false,false,args);*/
 	 }
 	 /*交换机和队列建立关系进行绑定*/
 	 /*参数中队列名和交换名,要和上面bean注入的名字一样*/
@@ -113,5 +128,21 @@ public class RabbitmqCofing {
 	 public Binding bind005(TopicExchange  topicExchange,Queue queue005) {
 		 /*需要绑定key来绑定队列和交换器*/
 		 return BindingBuilder.bind(queue005).to(topicExchange).with("*.k5.#");
+	 }
+	/*定义死信交换器*/
+	@Bean
+	public DirectExchange deadExchange() {
+	    return new DirectExchange(deadexchangename);
+	}
+	/*创建死信队列*/
+	 @Bean
+	 public Queue deadqueue001() {
+		 //后面的true代表需要持久化
+	    return new Queue(deadqueuename, true);
+	 }
+	 @Bean
+	 public Binding bind006(DirectExchange deadExchange,Queue deadqueue001) {
+		 /*用绑定key来绑定死信队列和死信交换器*/
+		 return BindingBuilder.bind(deadqueue001).to(deadExchange).with(deadroutingkey);
 	 }
 }
